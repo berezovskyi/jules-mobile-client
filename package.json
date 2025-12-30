@@ -9,8 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "build:android" : "eas build --platform android --local",
-    "oxc":"oxlint --type-aware",
+    "build:android": "eas build --platform android --local",
+    "oxc": "oxlint --type-aware",
     "generate-licenses": "bun scripts/generate-licenses.ts"
   },
   "dependencies": {
@@ -51,6 +51,8 @@
     "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "oxlint": "^1.36.0",
+    "oxlint-tsgolint": "^0.10.0",
     "typescript": "~5.9.2"
   },
   "private": true
