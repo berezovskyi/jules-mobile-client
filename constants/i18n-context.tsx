@@ -67,9 +67,9 @@ export function I18nProvider({ children }: I18nProviderProps) {
   );
 
   // 言語設定が読み込まれるまで待つ
-  if (!isLoaded) {
-    return null;
-  }
+  // if (!isLoaded) {
+  //   return null;
+  // }
 
   return (
     <I18nContext.Provider value={{ language, setLanguage, t }}>
