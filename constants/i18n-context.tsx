@@ -26,12 +26,18 @@ export function I18nProvider({ children }: I18nProviderProps) {
   useEffect(() => {
     const loadLanguage = async () => {
       try {
-        const savedLang = await SecureStore.getItemAsync(LANGUAGE_STORAGE_KEY);
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000));
+        const savedLang = await Promise.race([
+          SecureStore.getItemAsync(LANGUAGE_STORAGE_KEY),
+          timeoutPromise
+        ]) as string | null;
+
         if (savedLang === 'ja' || savedLang === 'en') {
           setLanguageState(savedLang);
         }
-      } catch {
+      } catch (e) {
         // 無視
+        console.warn('Failed to load language', e);
       }
       setIsLoaded(true);
     };

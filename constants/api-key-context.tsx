@@ -23,12 +23,19 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
   useEffect(() => {
     const loadApiKey = async () => {
       try {
-        const savedKey = await SecureStore.getItemAsync(API_KEY_STORAGE_KEY);
+        // Add timeout to prevent hanging on splash screen
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000));
+        const savedKey = await Promise.race([
+          SecureStore.getItemAsync(API_KEY_STORAGE_KEY),
+          timeoutPromise
+        ]) as string | null;
+
         if (savedKey) {
           setApiKeyState(savedKey);
         }
-      } catch {
-        // Ignore
+      } catch (e) {
+        // Ignore or log
+        console.warn('Failed to load API key', e);
       }
       setIsLoaded(true);
     };
