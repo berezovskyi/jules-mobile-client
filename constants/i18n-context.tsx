@@ -25,8 +25,11 @@ export function I18nProvider({ children }: I18nProviderProps) {
   // 起動時に保存された言語設定を読み込む
   useEffect(() => {
     const loadLanguage = async () => {
+      let timeoutId;
       try {
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000));
+        const timeoutPromise = new Promise((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Timeout')), 2000);
+        });
         const savedLang = await Promise.race([
           SecureStore.getItemAsync(LANGUAGE_STORAGE_KEY),
           timeoutPromise
@@ -38,6 +41,8 @@ export function I18nProvider({ children }: I18nProviderProps) {
       } catch (e) {
         // 無視
         console.warn('Failed to load language', e);
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
       }
       setIsLoaded(true);
     };

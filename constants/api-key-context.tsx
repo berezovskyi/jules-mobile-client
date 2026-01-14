@@ -22,9 +22,12 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
   // Load API key on mount
   useEffect(() => {
     const loadApiKey = async () => {
+      let timeoutId;
       try {
         // Add timeout to prevent hanging on splash screen
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000));
+        const timeoutPromise = new Promise((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Timeout')), 2000);
+        });
         const savedKey = await Promise.race([
           SecureStore.getItemAsync(API_KEY_STORAGE_KEY),
           timeoutPromise
@@ -36,6 +39,8 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
       } catch (e) {
         // Ignore or log
         console.warn('Failed to load API key', e);
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
       }
       setIsLoaded(true);
     };
