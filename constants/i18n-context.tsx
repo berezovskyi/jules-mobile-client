@@ -67,9 +67,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
   );
 
   // 言語設定が読み込まれるまで待つ
-  // if (!isLoaded) {
-  //   return null;
-  // }
+  // (Non-blocking: we render immediately to prevent splash screen hang)
 
   return (
     <I18nContext.Provider value={{ language, setLanguage, t }}>

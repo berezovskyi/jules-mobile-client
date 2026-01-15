@@ -58,9 +58,7 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
   }, []);
 
   // Wait for API key to load
-  // if (!isLoaded) {
-  //   return null;
-  // }
+  // (Non-blocking: we render immediately to prevent splash screen hang)
 
   return (
     <ApiKeyContext.Provider value={{ apiKey, setApiKey, isLoaded }}>
