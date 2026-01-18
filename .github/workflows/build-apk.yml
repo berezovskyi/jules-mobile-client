@@ -61,17 +61,17 @@ jobs:
         id: build_type
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "TASK=assembleDebug" >> $GITHUB_ENV
-            echo "APK_PATH=android/app/build/outputs/apk/debug/app-debug.apk" >> $GITHUB_ENV
-            echo "ARTIFACT_NAME=app-debug" >> $GITHUB_ENV
+            echo "TASK=assembleRelease" >> $GITHUB_ENV
+            echo "APK_PATH=android/app/build/outputs/apk/release/app-release.apk" >> $GITHUB_ENV
+            echo "ARTIFACT_NAME=app-release" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
             echo "TASK=assembleRelease" >> $GITHUB_ENV
             echo "APK_PATH=android/app/build/outputs/apk/release/app-release*.apk" >> $GITHUB_ENV
             echo "ARTIFACT_NAME=app-release" >> $GITHUB_ENV
           else
-             echo "TASK=assembleDebug" >> $GITHUB_ENV
-             echo "APK_PATH=android/app/build/outputs/apk/debug/app-debug.apk" >> $GITHUB_ENV
-             echo "ARTIFACT_NAME=app-debug" >> $GITHUB_ENV
+             echo "TASK=assembleRelease" >> $GITHUB_ENV
+             echo "APK_PATH=android/app/build/outputs/apk/release/app-release.apk" >> $GITHUB_ENV
+             echo "ARTIFACT_NAME=app-release" >> $GITHUB_ENV
           fi
 
       - name: Build APK
