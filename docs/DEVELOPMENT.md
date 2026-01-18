@@ -301,6 +301,139 @@ console.log('API Request:', url, options);
 console.log('API Response:', response);
 ```
 
+### Android-Specific Debugging
+
+#### Setting Up Android Emulator
+
+1. **Install Android Studio**
+   - Download from [developer.android.com/studio](https://developer.android.com/studio)
+   - Install Android SDK and required system images
+
+2. **Create an Emulator**
+   - Open Android Studio → Tools → Device Manager
+   - Create Virtual Device (recommended: Pixel 5 or similar)
+   - Download Android 16 (API 36) or latest system image
+
+3. **Start Emulator**
+   ```bash
+   # List available emulators
+   emulator -list-avds
+
+   # Start specific emulator
+   emulator -avd YOUR_EMULATOR_NAME &
+
+   # Or start from Android Studio Device Manager
+   ```
+
+#### Building Local Release APK
+
+To test release builds locally (matching CI configuration):
+
+```bash
+# Set up environment variables
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator"
+
+# Build release APK
+npx expo run:android --variant release
+
+# Manual installation if build succeeds but install fails
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+```
+
+**APK Location:** `android/app/build/outputs/apk/release/app-release.apk`
+
+#### Using ADB for Debugging
+
+```bash
+# Check connected devices
+adb devices
+
+# Install APK on connected device
+adb install -r path/to/app.apk
+
+# Launch app
+adb shell am start -n com.potetotown.julesmobileclcient/.MainActivity
+
+# View real-time logs
+adb logcat
+
+# Filter logs for your app
+adb logcat | grep "ReactNativeJS\|DEBUG"
+
+# Clear logs before testing
+adb logcat -c
+
+# Capture logs to file
+adb logcat > app-logs.txt
+
+# Get crash logs
+adb logcat -b crash
+
+# Check current focused app
+adb shell dumpsys window | grep "CurrentFocus"
+```
+
+#### Debugging Splash Screen Issues
+
+If the app hangs on splash screen:
+
+1. **Check Debug Overlay** (included in debug builds)
+   - The green debug overlay shows initialization progress
+   - Auto-hides after 30 seconds if no errors
+   - Stays visible if errors occur
+
+2. **Capture Logcat Output**
+   ```bash
+   # Clear logs, launch app, capture output
+   adb logcat -c
+   adb shell am start -n com.potetotown.julesmobileclcient/.MainActivity
+   sleep 10
+   adb logcat -d > splash-debug.txt
+   ```
+
+3. **Check for Common Issues**
+   - SecureStore timeout (should timeout after 2s)
+   - Splash screen API failures
+   - New Architecture initialization issues
+
+4. **Test Different Build Variants**
+   ```bash
+   # Debug build (includes debugging tools)
+   npx expo run:android
+
+   # Release build (matches production)
+   npx expo run:android --variant release
+   ```
+
+#### Device-Specific Testing
+
+When testing on physical Samsung/other devices:
+
+1. **Enable USB Debugging**
+   - Settings → About phone → Tap "Build number" 7 times
+   - Settings → Developer options → Enable "USB debugging"
+   - Connect device via USB and authorize computer
+
+2. **Transfer APK via ADB**
+   ```bash
+   # Build and copy to device
+   npx expo run:android --variant release --no-install
+   adb push android/app/build/outputs/apk/release/app-release.apk /sdcard/
+
+   # Or install directly
+   adb install -r android/app/build/outputs/apk/release/app-release.apk
+   ```
+
+3. **Debug on Physical Device**
+   ```bash
+   # Start remote debugging
+   adb reverse tcp:8081 tcp:8081
+
+   # View logs from physical device
+   adb logcat
+   ```
+
 ## Testing
 
 ### Run Linter

@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint:*)",
+      "Bash(npx expo lint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(export ANDROID_HOME=\"$HOME/Library/Android/sdk\")",
+      "Bash(export PATH=\"$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools\")",
+      "Bash(export PATH=\"$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin\")",
+      "Bash(emulator -list-avds:*)",
+      "Bash(export PATH=\"$PATH:$ANDROID_HOME/platform-tools\")",
+      "Bash(adb wait-for-device:*)",
+      "Bash(adb devices:*)",
+      "Bash(npx expo run:android)",
+      "Bash(npm install:*)",
+      "Bash(tee:*)",
+      "Bash(adb shell:*)",
+      "Bash(adb logcat:*)",
+      "Bash(npx expo run:android:*)",
+      "Bash(adb install:*)",
+      "Bash(ANDROID_HOME=\"$HOME/Library/Android/sdk\" PATH=\"$PATH:$ANDROID_HOME/platform-tools\" \"$ANDROID_HOME/platform-tools/adb\":*)",
+      "Bash(ANDROID_HOME=\"$HOME/Library/Android/sdk\" \"$ANDROID_HOME/platform-tools/adb\":*)",
+      "Bash($HOME/Library/Android/sdk/platform-tools/adb shell dumpsys window)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh run list:*)",
+      "Bash(gh workflow:*)",
+      "Bash(gh api:*)",
+      "Bash(gh run download:*)",
+      "Bash($HOME/Library/Android/sdk/platform-tools/adb devices)",
+      "Bash($HOME/Library/Android/sdk/platform-tools/adb install -r $HOME/Desktop/ci-debug-apk/app-debug/app-debug.apk)",
+      "Bash($HOME/Library/Android/sdk/platform-tools/adb logcat -c)",
+      "Bash($HOME/Library/Android/sdk/platform-tools/adb shell am start -n com.potetotown.julesmobileclcient/.MainActivity)",
+      "Bash($HOME/Library/Android/sdk/platform-tools/adb logcat -d)"
+    ]
+  }
+}

@@ -12,7 +12,8 @@
   <a href="README.ja.md">🇯🇵 日本語</a> •
   <a href="docs/ARCHITECTURE.md">📐 Architecture</a> •
   <a href="docs/API.md">🔌 API Reference</a> •
-  <a href="docs/Agent.md">🤖 Agent Guide</a>
+  <a href="docs/Agent.md">🤖 Agent Guide</a> •
+  <a href="docs/DEVELOPMENT.md">🛠️ Development</a>
 </p>
 
 ---
@@ -157,6 +158,37 @@ See [API Reference](docs/API.md) for detailed documentation.
 | [TypeScript](https://www.typescriptlang.org/) | Type safety |
 | [expo-secure-store](https://docs.expo.dev/versions/latest/sdk/securestore/) | Secure storage |
 | [react-native-markdown-display](https://github.com/iamacup/react-native-markdown-display) | Markdown rendering |
+
+## 🐛 Debugging
+
+For detailed debugging instructions, see:
+- **[Development Guide](docs/DEVELOPMENT.md)** - Android emulator setup, ADB usage, local APK builds
+- **[CI Build Comparison](docs/CI-BUILD-COMPARISON.md)** - Differences between CI and local builds
+
+### Quick Debug Tips
+
+**Android Emulator**:
+```bash
+# Start emulator and run app
+emulator -avd YOUR_EMULATOR_NAME &
+npx expo run:android
+```
+
+**Build Local Release APK**:
+```bash
+# Build release variant matching CI
+npx expo run:android --variant release
+# APK location: android/app/build/outputs/apk/release/app-release.apk
+```
+
+**Debug with ADB**:
+```bash
+# View real-time logs
+adb logcat | grep "ReactNativeJS"
+
+# Install APK on connected device
+adb install -r path/to/app.apk
+```
 
 ## 📱 Building for Production
 
