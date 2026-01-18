@@ -20,6 +20,7 @@ import { useJulesApi } from '@/hooks/use-jules-api';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useI18n } from '@/constants/i18n-context';
 import { useApiKey } from '@/constants/api-key-context';
+import type { Source } from '@/constants/types';
 
 /**
  * シマー効果付きスケルトン
@@ -142,6 +143,28 @@ const skeletonStyles = StyleSheet.create({
   },
 });
 
+function parseSource(sourceName: string, defaultBranchName: string = 'main'): Source {
+  // sourceName format: sources/github/owner/repo
+  const parts = sourceName.split('/');
+  if (parts.length >= 4 && parts[1] === 'github') {
+    const owner = parts[2];
+    const repo = parts[3];
+    return {
+      name: sourceName,
+      displayName: `${owner}/${repo}`,
+      githubRepo: {
+        owner,
+        repo,
+        defaultBranch: { displayName: defaultBranchName },
+      },
+    };
+  }
+  return {
+    name: sourceName,
+    displayName: sourceName,
+  };
+}
+
 export default function CreateSessionScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -154,6 +177,7 @@ export default function CreateSessionScreen() {
   const [prompt, setPrompt] = useState('');
   const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [recentSources, setRecentSources] = useState<Source[]>([]);
 
   const { 
     isLoading, 
@@ -164,6 +188,7 @@ export default function CreateSessionScreen() {
     isLoadingMoreSources,
     fetchSources, 
     fetchMoreSources,
+    fetchSessions,
     createSession 
   } = useJulesApi({ apiKey, t });
 
@@ -174,6 +199,35 @@ export default function CreateSessionScreen() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiKey]);
+
+  // Fetch recent sessions to determine active repos
+  useEffect(() => {
+    if (apiKey) {
+      void (async () => {
+        try {
+          const sessions = await fetchSessions(true); // silent
+          // Process sessions
+          const uniqueSourcesMap = new Map<string, Source>();
+
+          sessions
+            .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())
+            .forEach(session => {
+              if (session.sourceContext?.source) {
+                const sourceName = session.sourceContext.source;
+                if (!uniqueSourcesMap.has(sourceName)) {
+                  const startingBranch = session.sourceContext.githubRepoContext?.startingBranch || 'main';
+                  uniqueSourcesMap.set(sourceName, parseSource(sourceName, startingBranch));
+                }
+              }
+            });
+
+          setRecentSources(Array.from(uniqueSourcesMap.values()).slice(0, 12));
+        } catch (e) {
+          console.error("Failed to fetch recent sessions", e);
+        }
+      })();
+    }
+  }, [apiKey, fetchSessions]);
 
   // Background fetch more sources while dropdown is open
   useEffect(() => {
@@ -211,7 +265,7 @@ export default function CreateSessionScreen() {
     }
 
     // Get default branch from selected source
-    const source = sources.find((s) => s.name === selectedSource);
+    const source = sources.find((s) => s.name === selectedSource) || recentSources.find((s) => s.name === selectedSource);
     const defaultBranch = source?.githubRepo?.defaultBranch?.displayName || 'main';
 
     const session = await createSession(selectedSource, prompt, defaultBranch);
@@ -223,6 +277,43 @@ export default function CreateSessionScreen() {
         },
       ]);
     }
+  };
+
+  const renderSourceItem = (source: Source) => {
+    const displayName = source.githubRepo
+      ? `${source.githubRepo.owner}/${source.githubRepo.repo}`
+      : source.displayName || source.name;
+
+    return (
+      <TouchableOpacity
+        key={source.name}
+        style={[
+          styles.sourceItem,
+          selectedSource === source.name && styles.sourceItemSelected,
+          isDark && styles.sourceItemDark,
+        ]}
+        onPress={() => {
+          setSelectedSource(source.name);
+          setIsDropdownOpen(false);
+        }}
+      >
+        <IconSymbol
+          name="link"
+          size={14}
+          color={selectedSource === source.name ? '#2563eb' : isDark ? '#64748b' : '#94a3b8'}
+        />
+        <Text
+          style={[
+            styles.sourceItemText,
+            isDark && styles.sourceItemTextDark,
+            selectedSource === source.name && styles.sourceItemTextSelected,
+          ]}
+          numberOfLines={1}
+        >
+          {displayName}
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -278,14 +369,14 @@ export default function CreateSessionScreen() {
                   numberOfLines={1}
                 >
                   {selectedSource
-                    ? sources.find((s) => s.name === selectedSource)?.displayName || selectedSource
+                    ? (sources.find((s) => s.name === selectedSource) || recentSources.find((s) => s.name === selectedSource))?.displayName || selectedSource
                     : t('selectPlaceholder')}
                 </Text>
                 <IconSymbol name={isDropdownOpen ? 'chevron.up' : 'chevron.down'} size={16} color={isDark ? '#64748b' : '#94a3b8'} />
               </TouchableOpacity>
 
               {/* Source list with lazy loading */}
-              {isDropdownOpen && sourcesLoaded && sources.length > 0 && (
+              {isDropdownOpen && (sourcesLoaded || recentSources.length > 0) && (
                 <ScrollView 
                   style={[styles.sourceList, isDark && styles.sourceListDark]}
                   nestedScrollEnabled
@@ -293,41 +384,28 @@ export default function CreateSessionScreen() {
                   onScroll={handleSourcesScroll}
                   scrollEventThrottle={400}
                 >
-                  {sources.map((source) => {
-                    const displayName = source.githubRepo
-                      ? `${source.githubRepo.owner}/${source.githubRepo.repo}`
-                      : source.displayName || source.name;
-                    return (
-                      <TouchableOpacity
-                        key={source.name}
-                        style={[
-                          styles.sourceItem,
-                          selectedSource === source.name && styles.sourceItemSelected,
-                          isDark && styles.sourceItemDark,
-                        ]}
-                        onPress={() => {
-                          setSelectedSource(source.name);
-                          setIsDropdownOpen(false);
-                        }}
-                      >
-                        <IconSymbol
-                          name="link"
-                          size={14}
-                          color={selectedSource === source.name ? '#2563eb' : isDark ? '#64748b' : '#94a3b8'}
-                        />
-                        <Text
-                          style={[
-                            styles.sourceItemText,
-                            isDark && styles.sourceItemTextDark,
-                            selectedSource === source.name && styles.sourceItemTextSelected,
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {displayName}
+                  {/* Recent Sources Section */}
+                  {recentSources.length > 0 && (
+                    <>
+                      <View style={[styles.sectionHeader, isDark && styles.sectionHeaderDark]}>
+                        <Text style={[styles.sectionHeaderText, isDark && styles.sectionHeaderTextDark]}>
+                          {t('recentRepos', 'Recent')}
                         </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
+                      </View>
+                      {recentSources.map(source => renderSourceItem(source))}
+
+                      <View style={[styles.sectionHeader, isDark && styles.sectionHeaderDark]}>
+                        <Text style={[styles.sectionHeaderText, isDark && styles.sectionHeaderTextDark]}>
+                          {t('allRepos', 'All Repositories')}
+                        </Text>
+                      </View>
+                    </>
+                  )}
+
+                  {sources
+                    .filter(s => !recentSources.some(rs => rs.name === s.name))
+                    .map((source) => renderSourceItem(source))}
+
                   {/* Loading indicator for more sources */}
                   {isLoadingMoreSources && (
                     <View style={styles.loadingMore}>
@@ -348,7 +426,7 @@ export default function CreateSessionScreen() {
                 </ScrollView>
               )}
 
-              {sourcesLoaded && sources.length === 0 && isDropdownOpen && (
+              {sourcesLoaded && sources.length === 0 && recentSources.length === 0 && isDropdownOpen && (
                 <Text style={[styles.hint, { color: '#f59e0b' }]}>
                   {t('noSourcesFound')}
                 </Text>
@@ -563,5 +641,25 @@ const styles = StyleSheet.create({
   },
   endOfListTextDark: {
     color: '#64748b',
+  },
+  sectionHeader: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#f1f5f9',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  sectionHeaderDark: {
+    backgroundColor: '#1e293b',
+    borderBottomColor: '#334155',
+  },
+  sectionHeaderText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748b',
+    textTransform: 'uppercase',
+  },
+  sectionHeaderTextDark: {
+    color: '#94a3b8',
   },
 });
