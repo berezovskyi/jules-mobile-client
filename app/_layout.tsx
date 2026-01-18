@@ -57,7 +57,7 @@ function LayoutContent() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         <Stack.Screen name="create-session" options={{ presentation: 'modal', title: 'New Task' }} />
-        <Stack.Screen name="session/[id]" options={{ title: 'Session' }} />
+        <Stack.Screen name="session/id" options={{ title: 'Session' }} />
       </Stack>
       <StatusBar style="auto" />
       <DebugOverlay />
