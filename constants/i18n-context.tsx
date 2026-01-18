@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { translations, type Language } from './i18n';
+import { debugLog } from '@/components/debug-overlay';
 
 type TranslationKey = keyof typeof translations.ja;
 
@@ -25,15 +26,30 @@ export function I18nProvider({ children }: I18nProviderProps) {
   // 起動時に保存された言語設定を読み込む
   useEffect(() => {
     const loadLanguage = async () => {
+      debugLog('I18nProvider: Loading language');
+      let timeoutId;
       try {
-        const savedLang = await SecureStore.getItemAsync(LANGUAGE_STORAGE_KEY);
+        const timeoutPromise = new Promise((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Timeout')), 2000);
+        });
+        const savedLang = await Promise.race([
+          SecureStore.getItemAsync(LANGUAGE_STORAGE_KEY),
+          timeoutPromise
+        ]) as string | null;
+
         if (savedLang === 'ja' || savedLang === 'en') {
           setLanguageState(savedLang);
+          debugLog('I18nProvider: Language loaded - ' + savedLang);
+        } else {
+          debugLog('I18nProvider: No saved language, using default');
         }
-      } catch {
-        // 無視
+      } catch (e) {
+        debugLog('I18nProvider: Failed to load language - ' + (e as Error).message, 'warn');
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
       }
       setIsLoaded(true);
+      debugLog('I18nProvider: Load complete');
     };
     void loadLanguage();
   }, []);
@@ -56,9 +72,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
   );
 
   // 言語設定が読み込まれるまで待つ
-  if (!isLoaded) {
-    return null;
-  }
+  // (Non-blocking: we render immediately to prevent splash screen hang)
 
   return (
     <I18nContext.Provider value={{ language, setLanguage, t }}>
