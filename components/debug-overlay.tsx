@@ -18,8 +18,13 @@ export function debugLog(message: string, level: 'info' | 'warn' | 'error' = 'in
   };
   logs.push(log);
   console.log(`[DEBUG ${level.toUpperCase()}]`, message);
+  // Use setTimeout to avoid setState during render
   if (setLogsCallback) {
-    setLogsCallback([...logs]);
+    setTimeout(() => {
+      if (setLogsCallback) {
+        setLogsCallback([...logs]);
+      }
+    }, 0);
   }
 }
 
