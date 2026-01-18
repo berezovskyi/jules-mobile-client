@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import { debugLog } from '@/components/debug-overlay';
 
 const API_KEY_STORAGE_KEY = 'jules_api_key';
 
@@ -22,15 +23,31 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
   // Load API key on mount
   useEffect(() => {
     const loadApiKey = async () => {
+      debugLog('ApiKeyProvider: Loading API key');
+      let timeoutId;
       try {
-        const savedKey = await SecureStore.getItemAsync(API_KEY_STORAGE_KEY);
+        // Add timeout to prevent hanging on splash screen
+        const timeoutPromise = new Promise((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Timeout')), 2000);
+        });
+        const savedKey = await Promise.race([
+          SecureStore.getItemAsync(API_KEY_STORAGE_KEY),
+          timeoutPromise
+        ]) as string | null;
+
         if (savedKey) {
           setApiKeyState(savedKey);
+          debugLog('ApiKeyProvider: API key loaded');
+        } else {
+          debugLog('ApiKeyProvider: No saved API key');
         }
-      } catch {
-        // Ignore
+      } catch (e) {
+        debugLog('ApiKeyProvider: Failed to load API key - ' + (e as Error).message, 'warn');
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
       }
       setIsLoaded(true);
+      debugLog('ApiKeyProvider: Load complete');
     };
     void loadApiKey();
   }, []);
@@ -46,9 +63,7 @@ export function ApiKeyProvider({ children }: ApiKeyProviderProps) {
   }, []);
 
   // Wait for API key to load
-  if (!isLoaded) {
-    return null;
-  }
+  // (Non-blocking: we render immediately to prevent splash screen hang)
 
   return (
     <ApiKeyContext.Provider value={{ apiKey, setApiKey, isLoaded }}>
