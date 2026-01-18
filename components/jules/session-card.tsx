@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Linking } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useI18n } from '@/constants/i18n-context';
@@ -154,10 +154,17 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
         {session.name}
       </Text>
 
-      <View style={styles.footer}>
-        <IconSymbol name="link" size={12} color={isDark ? '#64748b' : '#94a3b8'} />
-        <Text style={[styles.footerText, isDark && styles.footerTextDark]}>Repository Link...</Text>
-      </View>
+      {session.submittedPr && (
+        <TouchableOpacity
+          style={styles.footer}
+          onPress={() => Linking.openURL(session.submittedPr!)}
+        >
+          <IconSymbol name="link" size={12} color={isDark ? '#64748b' : '#94a3b8'} />
+          <Text style={[styles.footerText, isDark && styles.footerTextDark]}>
+            Open Pull Request
+          </Text>
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 }

@@ -35,6 +35,7 @@ export interface Session {
   state: 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'FAILED';
   createTime: string;
   updateTime: string;
+  submittedPr?: string;
 }
 
 // プランステップ
