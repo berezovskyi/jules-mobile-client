@@ -48,6 +48,12 @@ export interface Session {
   state: 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'FAILED';
   createTime: string;
   updateTime: string;
+  sourceContext?: {
+    source: string;
+    githubRepoContext?: {
+      startingBranch?: string;
+    };
+  };
   outputs?: SessionOutput[];
   submittedPr?: string;
 }

@@ -73,6 +73,8 @@ const translations = {
     approvePlanFailed: 'プランの承認に失敗したよ',
     createSessionFailed: 'セッションが作れなかったよ',
     loadingMore: 'さらに読み込み中...',
+    allRepos: "すべてのリポジトリ",
+    recentRepos: "最近のリポジトリ"
   },
   en: {
     // Common
@@ -142,6 +144,9 @@ const translations = {
     approvePlanFailed: 'Failed to approve plan',
     createSessionFailed: 'Failed to create session',
     loadingMore: 'Loading more...',
+
+    allRepos: "All repositories",
+    recentRepos: "Recent repositories"
   },
 };
 
