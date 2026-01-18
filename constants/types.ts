@@ -28,6 +28,19 @@ export interface Source {
   };
 }
 
+// PRオブジェクト
+export interface PullRequest {
+  url?: string;
+  title?: string;
+  description?: string;
+}
+
+// セッション出力
+export interface SessionOutput {
+  pullRequest?: PullRequest;
+  [key: string]: unknown;
+}
+
 // セッション (タスクの単位)
 export interface Session {
   name: string; // "sessions/..."
@@ -35,6 +48,7 @@ export interface Session {
   state: 'STATE_UNSPECIFIED' | 'ACTIVE' | 'COMPLETED' | 'FAILED';
   createTime: string;
   updateTime: string;
+  outputs?: SessionOutput[];
   submittedPr?: string;
 }
 
