@@ -28,6 +28,19 @@ export interface Source {
   };
 }
 
+// PRオブジェクト
+export interface PullRequest {
+  url?: string;
+  title?: string;
+  description?: string;
+}
+
+// セッション出力
+export interface SessionOutput {
+  pullRequest?: PullRequest;
+  [key: string]: unknown;
+}
+
 // セッション (タスクの単位)
 export interface Session {
   name: string; // "sessions/..."
@@ -41,6 +54,8 @@ export interface Session {
       startingBranch?: string;
     };
   };
+  outputs?: SessionOutput[];
+  submittedPr?: string;
 }
 
 // プランステップ
